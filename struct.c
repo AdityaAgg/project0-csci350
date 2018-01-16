@@ -38,9 +38,57 @@ int write_buf(int f, void *buf, int size) {
 	uint8_t *b = (uint8_t*) buf + tot;
 
 	int w = write(f, b, size-tot);
+    printf("w size %d \n", w);
 	if (w < 0) return -1;
 	tot += w;
     }
+    return 0;
+}
+
+
+
+/* Write size bytes from buf into file descriptor f (see open(1)).  Deal with
+ * the possibility of write (2) not outputting all bytes requested. */
+int write_buf_same(int f, void *buf, int size) {
+    int tot = 0;
+    
+    //cast to get pointers to each element in struct
+    struct example * buf_struct = (struct example *)buf;
+    
+    
+    //write last fifteen digits first
+    uint8_t * buf_array = (uint8_t*) buf_struct->some;
+    int i = 0;
+    while ( i < 15) {
+        uint8_t *b = buf_array + tot;
+        
+        int w = write(f, b, 4);
+        if (w < 0) return -1;
+        tot += w;
+        ++i;
+    }
+    
+    
+    
+    //write integer next
+    buf_array = (uint8_t*) &(buf_struct->int32);
+    uint8_t *b = buf_array + tot;
+    int  w = write(f, b , 4);
+     tot += 4;
+    
+    //write short next
+    buf_array = (uint8_t*) &(buf_struct->int16);
+    w = write(f, b, 2);
+    tot += 2;
+    
+    
+    //write byte next
+    buf_array = (uint8_t*) &(buf_struct->byte);
+    w = write(f, b, 1);
+    tot += 1;
+    
+    printf("the size of tot is %d", tot);
+    
     return 0;
 }
 
@@ -68,7 +116,16 @@ int main(int argc, char **argv) {
     if ( (buf = malloc(sizeof(ex))) == NULL) fatal("malloc");
     bcopy(&ex, buf, sizeof(ex));
 
-    if ( write_buf(f, buf, sizeof(ex))) fatal("write");
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    if ( write_buf_same(f, buf, sizeof(ex))) fatal("write");
     close(f);
 
     /* C does not garbage collect buf.  All malloc-ed (or otherwise allocated)
