@@ -50,19 +50,32 @@ int write_buf(int f, void *buf, int size) {
 /* Write size bytes from buf into file descriptor f (see open(1)).  Deal with
  * the possibility of write (2) not outputting all bytes requested. */
 int write_buf_same(int f, void *buf, int size) {
-    int tot = 0;
+    
     
     //cast to get pointers to each element in struct
     struct example * buf_struct = (struct example *)buf;
+    uint8_t * buf_array = (uint8_t*) &(buf_struct->byte);
+    
+    //write byte next
+    int w = write(f, buf_array, 1);
+    
+    //write integer next
+    buf_array = (uint8_t*) &(buf_struct->int32);
+    w = write(f, buf_array , 4);
+    
+    //write short next
+    buf_array = (uint8_t*) &(buf_struct->int16);
+    w = write(f, buf_array, 2);
     
     
     //write last fifteen digits first
-    uint8_t * buf_array = (uint8_t*) buf_struct->some;
+    buf_array = (uint8_t*) buf_struct->some;
     int i = 0;
+    int tot = 0;
     while ( i < 15) {
         uint8_t *b = buf_array + tot;
         
-        int w = write(f, b, 4);
+        w = write(f, b, 4);
         if (w < 0) return -1;
         tot += w;
         ++i;
@@ -70,24 +83,13 @@ int write_buf_same(int f, void *buf, int size) {
     
     
     
-    //write integer next
-    buf_array = (uint8_t*) &(buf_struct->int32);
-    uint8_t *b = buf_array + tot;
-    int  w = write(f, b , 4);
-     tot += 4;
-    
-    //write short next
-    buf_array = (uint8_t*) &(buf_struct->int16);
-    w = write(f, b, 2);
-    tot += 2;
     
     
-    //write byte next
-    buf_array = (uint8_t*) &(buf_struct->byte);
-    w = write(f, b, 1);
-    tot += 1;
     
-    printf("the size of tot is %d", tot);
+    
+    
+    
+    
     
     return 0;
 }
